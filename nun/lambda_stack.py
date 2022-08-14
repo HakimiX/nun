@@ -16,3 +16,11 @@ class LambdaStack(Stack):
           handler="lambda.handler",
           code=_lambda.Code.from_asset('./lambda/pull')
         )
+
+        # Lambda (mod)
+        self.lambda_mod = _lambda.Function(
+          self, 'lambda_mod',
+          runtime=_lambda.Runtime.PYTHON_3_8,
+          handler="lambda.handler",
+          code=_lambda.Code.from_asset('./lambda/mod')
+        )

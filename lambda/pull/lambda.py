@@ -1,5 +1,4 @@
 import logging
-import queue
 import boto3
 
 logger = logging.getLogger()
