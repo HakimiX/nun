@@ -1,5 +1,6 @@
 import logging
 import boto3
+import json
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -13,6 +14,12 @@ def handler(event, context):
 
   # TODO: queue_url is hardcoded, store it in parameter store
   queue_url = 'https://sqs.eu-west-1.amazonaws.com/933021064415/sqs-stack-firstqueueCCA81F5D-Z4fY2lRXzi8X'  
+
+  message_body = ""
+  if event is None:
+    message_body = 'peanutbutter is good'
+  else:
+    message_body = event
 
   response = sqs.send_message(
     QueueUrl=queue_url,
@@ -32,7 +39,7 @@ def handler(event, context):
         }
     },
     MessageBody=(
-      'peanutbutter'
+      json.dumps(message_body)
     )
   )
 
