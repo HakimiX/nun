@@ -25,17 +25,19 @@ class NunStack(Stack):
         S3 Buckets
         """
         s3_bucket = _s3.Bucket(
-            self, 's3_bucket', removal_policy=RemovalPolicy.DESTROY)
 
         """ 
         SQS Queues
         """
         # sqs-queue (first)
         sqs_queue_first = sqs.Queue(
-            self, 'first_queue', queue_name='first_queue')
+            self, 'first_queue',
+            queue_name='first_queue'
+        )
 
         sqs_queue_second = sqs.Queue(
-            self, 'second_queue', queue_name='second_queue'
+            self, 'second_queue', 
+            queue_name='second_queue'
         )
 
         """ 
