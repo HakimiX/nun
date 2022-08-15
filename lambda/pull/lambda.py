@@ -3,6 +3,13 @@ import boto3
 import json
 import os
 
+""" 
+Flow 
+1. Get S3 notification (OBJECT_CREATED)
+2. Get S3 object (parse content)
+3. Send SQS message
+"""
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -11,16 +18,18 @@ SQS_QUEUE_URL = os.environ['SQS_QUEUE_FIRST_URL']
 
 def handler(event, context):
     # TODO: should pull data from s3
-    logger.info('incoming event: {}'.format(event))
+    logger.info('incoming event: {}, type: {}'.format(event, type(event)))
 
-    sqs = boto3.client('sqs')
+    sqs_client = boto3.client('sqs')
+    s3_client = boto3.client('s3')
 
-    if event is None:
-        message_body = 'peanut-butter is good'
-    else:
-        message_body = event
+    # 1. Get S3 object if eventType is OBJECT_CREATED
+    for events in event['Records']:
+        if events['eventSource'] == 'aws:s3' and events['eventName'] == 'ObjectCreated:Put':
+            logger.info('Got an s3 event: OBJECT_CREATED')
+        
 
-    response = sqs.send_message(
+    response = sqs_client.send_message(
         QueueUrl=SQS_QUEUE_URL,
         DelaySeconds=5,
         MessageAttributes={
@@ -38,7 +47,7 @@ def handler(event, context):
             }
         },
         MessageBody=(
-            json.dumps(message_body)
+            json.dumps('message_body')
         )
     )
 
