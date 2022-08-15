@@ -25,6 +25,10 @@ class NunStack(Stack):
         S3 Buckets
         """
         s3_bucket = _s3.Bucket(
+            self, 's3_bucket',
+            removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True
+        )
 
         """ 
         SQS Queues
