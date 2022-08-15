@@ -71,6 +71,14 @@ class NunStack(Stack):
             }
         )
 
+        lambda_bury = _lambda.Function(
+            self, 'lambda_bury',
+            function_name='lambda_bury',
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            handler='lambda.handler',
+            code=_lambda.Code.from_asset('./lambda/bury')
+        )
+
         """ 
         Permissions
         """
@@ -80,9 +88,14 @@ class NunStack(Stack):
 
         # grant lambda_mod permission to dequeue
         sqs_queue_first.grant_consume_messages(grantee=lambda_mod)
+        sqs_queue_second.grant_consume_messages(grantee=lambda_bury)
 
-        # SQS event -> trigger lambda function
-        sqs_consume_event = lambda_events.SqsEventSource(sqs_queue_first)
-        lambda_mod.add_event_source(sqs_consume_event)
+        # sqs_queue_first -> trigger lambda function
+        sqs_consume_event_first = lambda_events.SqsEventSource(sqs_queue_first)
+        lambda_mod.add_event_source(sqs_consume_event_first)
+
+        # sqs_queue_second -> trigger lambda function
+        sqs_consume_event_second = lambda_events.SqsEventSource(sqs_queue_second)
+        lambda_bury.add_event_source(sqs_consume_event_second)
 
         
