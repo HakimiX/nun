@@ -14,6 +14,16 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 SQS_QUEUE_URL = os.environ['SQS_QUEUE_FIRST_URL']
+S3_BUCKET = os.environ['S3_BUCKET']
+
+
+def fetch_object(bucket, key):
+    logger.info('Fetching object: {}, from bucket: {}'.format(bucket, key))
+
+    s3_client = boto3.client('s3')
+    object = s3_client.get_object(Bucket=bucket, Key=key)
+    object = json.loads(object['Body'].read())
+    logger.info('Object content: {}'.format(object))
 
 
 def handler(event, context):
@@ -21,12 +31,13 @@ def handler(event, context):
     logger.info('incoming event: {}, type: {}'.format(event, type(event)))
 
     sqs_client = boto3.client('sqs')
-    s3_client = boto3.client('s3')
 
     # 1. Get S3 object if eventType is OBJECT_CREATED
-    for events in event['Records']:
-        if events['eventSource'] == 'aws:s3' and events['eventName'] == 'ObjectCreated:Put':
+    for s3_event in event['Records']:
+        if s3_event['eventSource'] == 'aws:s3' and s3_event['eventName'] == 'ObjectCreated:Put':
             logger.info('Got an s3 event: OBJECT_CREATED')
+            s3_key = s3_event['s3']['object']['key']
+            fetch_object(S3_BUCKET, s3_key)            
         
 
     response = sqs_client.send_message(
