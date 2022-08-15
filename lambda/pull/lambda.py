@@ -1,51 +1,50 @@
 import logging
 import boto3
 import json
+import os
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+SQS_QUEUE_URL = os.environ['SQS_QUEUE_FIRST_URL']
+
 
 def handler(event, context):
-  # TODO: should pull data from s3
-  logger.info('incoming event: {}'.format(event))
+    # TODO: should pull data from s3
+    logger.info('incoming event: {}'.format(event))
 
-  sqs = boto3.client('sqs')
+    sqs = boto3.client('sqs')
 
-  # TODO: queue_url is hardcoded, store it in parameter store
-  queue_url = 'https://sqs.eu-west-1.amazonaws.com/933021064415/sqs-stack-firstqueueCCA81F5D-Z4fY2lRXzi8X'  
+    if event is None:
+        message_body = 'peanut-butter is good'
+    else:
+        message_body = event
 
-  message_body = ""
-  if event is None:
-    message_body = 'peanutbutter is good'
-  else:
-    message_body = event
-
-  response = sqs.send_message(
-    QueueUrl=queue_url,
-    DelaySeconds=5,
-    MessageAttributes={
-        'Title': {
-            'DataType': 'String',
-            'StringValue': 'The Whistler'
+    response = sqs.send_message(
+        QueueUrl=SQS_QUEUE_URL,
+        DelaySeconds=5,
+        MessageAttributes={
+            'Title': {
+                'DataType': 'String',
+                'StringValue': 'The Whistler'
+            },
+            'Author': {
+                'DataType': 'String',
+                'StringValue': 'John Grisham'
+            },
+            'WeeksOn': {
+                'DataType': 'Number',
+                'StringValue': '6'
+            }
         },
-        'Author': {
-            'DataType': 'String',
-            'StringValue': 'John Grisham'
-        },
-        'WeeksOn': {
-            'DataType': 'Number',
-            'StringValue': '6'
-        }
-    },
-    MessageBody=(
-      json.dumps(message_body)
+        MessageBody=(
+            json.dumps(message_body)
+        )
     )
-  )
 
-  logger.info('Sent message with id: {}'.format(response['MessageId']))
+    logger.info('Sent message with id: {}'.format(response['MessageId']))
 
-  return {
-    'statusCode': 200,
-    'body': 'success'
-  }
+    return {
+        'statusCode': 200,
+        'body': 'success'
+    }
