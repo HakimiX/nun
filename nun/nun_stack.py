@@ -62,7 +62,8 @@ class NunStack(Stack):
             handler="lambda.handler",
             code=_lambda.Code.from_asset('./lambda/pull'),
             environment={
-                'SQS_QUEUE_FIRST_URL': sqs_queue_first_url.string_value
+                'SQS_QUEUE_FIRST_URL': sqs_queue_first_url.string_value,
+                'S3_BUCKET': s3_bucket.bucket_name
             }
         )
 
@@ -104,6 +105,9 @@ class NunStack(Stack):
         # sqs_queue_second -> trigger lambda function
         sqs_consume_event_second = lambda_events.SqsEventSource(sqs_queue_second)
         lambda_bury.add_event_source(sqs_consume_event_second)
+
+        # grant lambda_pull permission to read object
+        s3_bucket.grant_read(lambda_pull)
 
         """ 
         S3 Notifications
