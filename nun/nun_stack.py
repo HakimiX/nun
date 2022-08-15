@@ -1,5 +1,6 @@
 import queue
 from aws_cdk import (
+    RemovalPolicy,
     aws_lambda as _lambda,
     aws_sqs as sqs,
     aws_ssm as ssm,
@@ -23,7 +24,8 @@ class NunStack(Stack):
         """
         S3 Buckets
         """
-        s3_bucket = _s3.Bucket(self, 's3_bucket')
+        s3_bucket = _s3.Bucket(
+            self, 's3_bucket', removal_policy=RemovalPolicy.DESTROY)
 
         """ 
         SQS Queues
@@ -103,7 +105,8 @@ class NunStack(Stack):
         lambda_mod.add_event_source(sqs_consume_event_first)
 
         # sqs_queue_second -> trigger lambda function
-        sqs_consume_event_second = lambda_events.SqsEventSource(sqs_queue_second)
+        sqs_consume_event_second = lambda_events.SqsEventSource(
+            sqs_queue_second)
         lambda_bury.add_event_source(sqs_consume_event_second)
 
         # grant lambda_pull permission to read object
@@ -113,5 +116,7 @@ class NunStack(Stack):
         S3 Notifications
         """
         # notify lambda_pull about new object (OBJECT_CREATED)
-        new_object_notification = s3_notification.LambdaDestination(lambda_pull)
-        s3_bucket.add_event_notification(_s3.EventType.OBJECT_CREATED, new_object_notification)
+        new_object_notification = s3_notification.LambdaDestination(
+            lambda_pull)
+        s3_bucket.add_event_notification(
+            _s3.EventType.OBJECT_CREATED, new_object_notification)
