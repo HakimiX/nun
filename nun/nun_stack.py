@@ -3,6 +3,8 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_sqs as sqs,
     aws_ssm as ssm,
+    aws_s3 as _s3,
+    aws_s3_notifications as s3_notification,
     aws_lambda_event_sources as lambda_events,
     Stack
 )
@@ -17,6 +19,11 @@ class NunStack(Stack):
         # environment variables are set in 'cdk.json'
         prj_name = self.node.try_get_context('project_name')
         env_name = self.node.try_get_context('env')
+
+        """
+        S3 Buckets
+        """
+        s3_bucket = _s3.Bucket(self, 's3_bucket')
 
         """ 
         SQS Queues
@@ -98,4 +105,9 @@ class NunStack(Stack):
         sqs_consume_event_second = lambda_events.SqsEventSource(sqs_queue_second)
         lambda_bury.add_event_source(sqs_consume_event_second)
 
-        
+        """ 
+        S3 Notifications
+        """
+        # notify lambda_pull about new object (OBJECT_CREATED)
+        new_object_notification = s3_notification.LambdaDestination(lambda_pull)
+        s3_bucket.add_event_notification(_s3.EventType.OBJECT_CREATED, new_object_notification)
