@@ -1,3 +1,5 @@
+.idea
+.vscode
 *.swp
 package-lock.json
 __pycache__
